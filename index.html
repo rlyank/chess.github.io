@@ -139,19 +139,16 @@
 /* ============================================================
    1. STOCKFISH ENGINE SETUP
    ============================================================ */
-// CDN se Stockfish load karein (Ye background mein chalega)
 const engine = new Worker('https://cdn.jsdelivr.net/npm/stockfish.js@10.0.2/stockfish.js');
 let isEngineThinking = false;
 let isHintMode = false;
 let playVsEngine = false;
-let engineDepth = 10; // Kitna deep sochana hai (10 = fast & strong)
+let engineDepth = 10; 
 
 engine.onmessage = function(event) {
   const line = event.data;
-  
-  // Jab engine apna best move bata de
   if (line.includes('bestmove')) {
-    const moveStr = line.split(' ')[1]; // example: "e2e4"
+    const moveStr = line.split(' ')[1];
     isEngineThinking = false;
     document.getElementById('engineStatus').classList.remove('show');
 
@@ -161,13 +158,11 @@ engine.onmessage = function(event) {
       const promotion = moveStr.length > 4 ? moveStr.substring(4, 5) : 'q';
 
       if (isHintMode) {
-        // HINT MODE: Sirf highlight karo, move mat karo
         hintSquares = { from: from, to: to };
         render();
         setTimeout(() => { hintSquares = null; render(); }, 3000);
         isHintMode = false;
       } else {
-        // ENGINE MOVE: Computer ki taraf se move karo
         const result = game.move({ from: from, to: to, promotion: promotion });
         if (result) {
           lastMove = { from: result.from, to: result.to };
@@ -179,21 +174,16 @@ engine.onmessage = function(event) {
   }
 };
 
-// Engine ko trigger karein
 function triggerEngine(isHint = false) {
   if (isEngineThinking || game.game_over()) return;
-  
   isEngineThinking = true;
   isHintMode = isHint;
   document.getElementById('engineStatus').classList.add('show');
   document.getElementById('engineStatus').textContent = isHint ? "Calculating Hint..." : "Engine Thinking...";
-
-  // Engine ko current board ki position bhejein
   engine.postMessage('position fen ' + game.fen());
   engine.postMessage('go depth ' + engineDepth);
 }
 
-// Hint button logic
 function getHint() {
   if (game.turn() !== 'w' && !playVsEngine) {
     alert("Abhi aapki turn nahi hai!");
@@ -202,14 +192,12 @@ function getHint() {
   triggerEngine(true);
 }
 
-// Play vs Engine toggle
 function toggleEngine() {
   playVsEngine = !playVsEngine;
   const btn = document.getElementById('playEngineBtn');
   if (playVsEngine) {
     btn.textContent = "Play vs Computer: ON";
     btn.classList.add('active-btn');
-    // Agar user ne White khela aur abhi Black (engine) ki turn hai
     if (game.turn() === 'b') triggerEngine();
   } else {
     btn.textContent = "Play vs Computer: OFF";
@@ -295,7 +283,6 @@ function render() {
 }
 
 function onSquareClick(sq) {
-  // Agar engine soch raha hai ya computer ki turn hai, toh user move na kare
   if (isEngineThinking) return;
   if (playVsEngine && game.turn() === 'b') return;
 
@@ -370,9 +357,8 @@ function makeMove(from, to) {
     selectedSquare = null; legalMoves = []; hintSquares = null;
     render(); updateMoveList(); startClockIfNeeded();
 
-    // Agar Play vs Engine ON hai aur abhi Black (Engine) ki turn hai
     if (playVsEngine && game.turn() === 'b' && !game.game_over()) {
-      setTimeout(() => triggerEngine(false), 300); // Thoda delay taaki UI update ho jaye
+      setTimeout(() => triggerEngine(false), 300); 
     }
   }
 }
@@ -389,7 +375,6 @@ function newGame() {
 function undoMove() {
   if (game.history().length === 0) return;
   game.undo();
-  // Agar engine ke against khel rahe hain, toh 2 step undo karein (engine + aapka)
   if (playVsEngine && game.history().length > 0) game.undo();
   
   const h = game.history({ verbose: true });
@@ -477,4 +462,4 @@ updateMoveList();
 updateClocks();
 </script>
 </body>
-</html>
+ </html>
